@@ -1,39 +1,50 @@
+import {logout} from '@/apis/user';
+import { Message } from 'element-ui';
 export default {
-    state: {
-        // 是否登陆
-        isLogin: false,
-        // 用户信息 顶部导航栏使用
-        userInfo: null,
-        // 用户菜单
-        userMenus: null
+    state:{
+        isLogin:false,
+        userInfo:null,
+        userMenus:null // 用户路由菜单
     },
-    getters: {
-        // 获取登陆状态
-        getIsLogin(state) {
-            return state.isLogin;
+    getters:{
+        getIsLogin(state){
+            return state.isLogin
         },
-        // 获取登陆信息
-        getUserInfo(state) {
-            return state.userInfo;
+        getUserInfo(state){
+            return state.userInfo
         },
-        // 获取用户菜单信息
         getUserMenus(state) {
             return state.userMenus;
         }
     },
-    mutations: { // commit触发
-        changeIsLogin(state, payload) {
-            state.isLogin = payload;
+    mutations:{
+        changeIsLogin(state,payload){
+            state.isLogin = payload
         },
-        changeUserInfo(state, payload) {
+        changeUserInfo(state,payload) {
             state.userInfo = payload;
         },
-        changeUserMenus(state, payload) {
+        changeUserMenus(state,payload) {
             state.userMenus = payload;
-        },
+        }
     },
-    actions: { // patch触发
+    // 异步的行为放在action里面
+    actions:{
+        async doLogout({ commit,dispatch },payload){
+            let [res,err] = await logout();
 
+            // 清除各种数据
+            if (err) {
+                return Message.error('退出失败!!');
+            }
+            
+            // 如果是使用dispatch异步action,也可以使用await
+            commit('changeIsLogin',false);
+            commit('changeUserInfo',null);
+            commit('changeUserMenus',null);
+            
+            // 清空本地存储
+            window.sessionStorage.setItem('token','');
+        }
     }
-    // 异步的行为放在action里
 }

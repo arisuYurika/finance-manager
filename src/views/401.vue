@@ -30,6 +30,14 @@
 import errGif from '@/assets/401_images/401.gif'
 
 export default {
+  created(){
+    this.timer = setTimeout(()=>{
+      this.$router.replace('/login');
+    },2000)
+  },
+  beforeDestroy(){
+    clearTimeout(this.timer);
+  },  
   name: 'Page401',
   data() {
     return {

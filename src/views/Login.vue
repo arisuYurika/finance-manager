@@ -1,99 +1,120 @@
 <template>
-    <div>
-        <div class="container">
-            <el-form ref="LoginForm" :rules="LoginRules" :model="LoginFormData" label-width="80xp">
-                <el-form-item label="用户名" prop="username">
-                    <el-input type="text" v-model="LoginFormData.username"></el-input>
-                </el-form-item>
-                <el-form-item label="密码" prop="password">
-                    <el-input status-icon type="password" v-model="LoginFormData.password"></el-input>
-                </el-form-item>
-                <el-form-item>
-                    <el-button @click = "submitForm">登陆</el-button>
-                    <el-button type="primary"  @click = "resetForm">重置</el-button>
-                </el-form-item>
-            </el-form>
-        </div>
+  <div class="login-box">
+    <div class="login-input-box center">
+      <h1>信贷管理系统</h1>
+      <el-form :model="ruleForm" :rules="rules" status-icon ref="ruleForm" class="demo-ruleForm">
+        <el-form-item prop="username">
+          <el-input prefix-icon="el-icon-user-solid" v-model="ruleForm.username"></el-input>
+        </el-form-item>
+
+        <el-form-item prop="pass">
+          <el-input
+            prefix-icon="el-icon-s-order"
+            type="password"
+            v-model="ruleForm.pass"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+
+        <el-button type="primary" @click="submitForm">提交</el-button>
+      </el-form>
     </div>
+  </div>
 </template>
 <script>
-import { mapMutations } from "vuex";
-import { doLogin } from "@/services/api/user";
-  //验证规则
-  let validatePass = (rule, value, callback) => {
-    if (value === '') {
-      callback(new Error('请输入密码'));
-    } else if(value.length<6){
-      callback(new Error('密码不能小于6位数'));
-    }else{
-      callback();
-    }
-  };
-  export default {
-    data() {
-      return {
-        LoginFormData: {
-          username: 'admin',
-          password: 'approve123456.'
-        },
-        //验证器
-        LoginRules: {
-          username: [
-            { required:true, trigger: 'blur' ,message:'请输入用户名'}
-          ],
-          password: [
-            { validator: validatePass, trigger: 'blur' }
-          ]
-        }
-      };
+import { mapMutations } from "vuex"
+import { doLogin } from "@/apis/user";
 
-    },
-    methods: {
-      ...mapMutations({
-        changeLogin:'user/changeIsLogin',
-        changeUserInfo:'user/changeUserInfo'
-      }),
-      //异步登陆方法
-      async doLogin({username,password}){
-        console.log(`${username} 和 ${password}`);
-        let [res,err] = await doLogin({username,password})
-        if (err) {
-          this.$message.error('请求异常:'+ err.message);
-        }
-        console.log("res",res);
-        if(res.data.code === 20000){
-          console.log(res);
-          // 保存用户状态
-          this.changeLogin(true);
-          // 保存用户信息
-          this.changeUserInfo({
-            username:username
-          });
-          // 跳转到输入的地址或者主页
-          this.$router.push(this.$route.query.redirect||"/");
-        }else{
-          console.log('登录失败的:'+res);
-          alert("登录失败");
-        }
-      },
-      //表单提交方法
-      submitForm() {
-        //通过this.$refs拿到表单的DOM
-        this.$refs['LoginForm'].validate((valid) => {
-          if (valid) {
-            this.doLogin(this.LoginFormData)
-          } else {
-            console.log('error submit!!');
-            return false;
-          }
-        });
-      },
-      resetForm() {
-        this.$refs['LoginForm'].resetFields();
+export default {
+  data() {
+    var validatePass = function(rule, value, callback) {
+      if (value === "") {
+        callback(new Error("请输入密码"));
+      } else if (value.length < 6) {
+        callback(new Error("密码不能小于6位数"));
+      } else {
+        callback();
       }
+    };
+    return {
+      ruleForm: {
+        username: "admin",
+        pass: "approve123456."
+      },
+      rules: {
+        pass: [
+          {
+            validator: validatePass,
+            trigger: "blur"
+          }
+        ],
+        username: [{ required: true, trigger: "blur", message: "请输入用户名" }]
+      }
+    };
+  },
+  methods: {
+    ...mapMutations({
+      changeLogin: "user/changeIsLogin",
+      changeUserInfo: "user/changeUserInfo"
+    }),
+    // 登录方法
+    async doLogin(form) {
+      const [res,err] = await doLogin(form);
+      if (err) {
+        this.$message.error('请求异常:'+ err.message);
+      }
+      if (res.data.code === 20000) {
+        if (res?.data?.data?.token) {
+          // 改变用户信息
+          this.changeUserInfo({
+            username: form.username
+          });
+        }
+        // 改变登录状态
+        this.changeLogin(true);
+        this.$router.push(this.$route.query.redirect || "/");
+      } else {
+         this.$message.error('登录失败!!!');
+      }
+    },
+    submitForm() {
+      this.$refs.ruleForm.validate(valid => {
+        if (valid) {
+          // 登录流程
+          this.doLogin(this.ruleForm);
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
+    resetForm() {
+      this.$refs.ruleForm.resetFields();
     }
   }
+};
 </script>
-<style lang="sass" scoped>
-
+<style lang="scss" scoped>
+.login-input-box {
+  width: 650px;
+  height: 320px;
+  background: #fff;
+  text-align: center;
+  padding: 40px 40px 12px 12px;
+}
+.login-box {
+  height: 100%;
+  background: url(../assets/bg2.jpg);
+  background-size: cover;
+}
+.el-button {
+  width: 600px;
+}
+.el-input {
+  width: 600px;
+  margin-bottom: 16px;
+}
+::v-deep .el-input__inner {
+  background: #e5e5e5;
+}
 </style>

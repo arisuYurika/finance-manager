@@ -1,33 +1,43 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-// import user from './modules/user' 非动态引用
 
 Vue.use(Vuex)
 
-//动态引入modules下方的模块文件，作为module模块声明
-//require.context() 引用上下文
+// 动态引入modules下面的文件,作为module模块声明
+
 const modulesFn = require.context('./modules', true, /\.js$/);
-const modules = {}
 const regex = /.*\/(.*)\.js$/
-    // keys(): modules下所有的路径(如./user.js等)
-modulesFn.keys().forEach(filePath => {
-    // 通过正则将 ./user.js 变为 数组
-    let moduleName = regex.exec(filePath);
-    // 拿到数组里的 user
-    if (moduleName !== null) { moduleName = moduleName[1] }
-    // 通过 modulesFn(filePath) 拿到模块对象
-    const moduleObj = modulesFn(filePath);
+
+const modules = {};
+// modulesFn.keys() 可以获取到上述满足条件的文件的加载路径
+// modulesFn方法 modulesFn(路径) 获取模块
+// {文件的加载路径user:模块}
+modulesFn.keys().forEach(filepath => {
+  console.log(filepath);
+  let moduleName = regex.exec(filepath);
+  if (moduleName!== null) {
+    moduleName = moduleName[1]
+  }
+  const moduleObj = modulesFn(filepath);
     modules[moduleName] = {
-        namespaced: true,
-        // 对应export default {}
-        ...moduleObj.default
+      namespaced: true,
+      ...moduleObj.default
     }
-});
+})
+
+
+
+
+
+
 
 
 export default new Vuex.Store({
-    state: {},
-    mutations: {},
-    actions: {},
-    modules
+  state: {
+  },
+  mutations: {
+  },
+  actions: {
+  },
+  modules:modules
 })

@@ -1,7 +1,8 @@
 <template>
-  <div>
-    我是动态引入的loan-input
-  </div>
+  
+    <div>
+        录入申请
+    </div>
 </template>
 
 <script>
